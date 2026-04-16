@@ -583,7 +583,7 @@ data = res.<span class="method">json</span>()[<span class="string">"data"</span>
         <div class="pg-code-panel">
           <div class="pg-code-header">
             <span>Generated code</span>
-            <button class="pg-code-copy" onclick="pgCopyCode()">Copy</button>
+            <button class="pg-code-copy" onclick="pgCopyCode(event)">Copy</button>
           </div>
           <div class="pg-code-body" id="pg-code-output"></div>
         </div>
@@ -753,7 +753,7 @@ data = res.<span class="method">json</span>()[<span class="string">"data"</span>
         <code id="signup-key-value"></code>
         <div class="key-hint">This key has been emailed to you. Store it safely — it won't be shown again.</div>
         <div class="key-actions">
-          <button class="key-action-btn" onclick="copyKey()">Copy key</button>
+          <button class="key-action-btn" onclick="copyKey(event)">Copy key</button>
           <button class="key-action-btn primary" onclick="useKeyInPlayground()">Use in playground</button>
         </div>
       </div>
@@ -918,9 +918,9 @@ async function handleSignup(tier) {
   }
 }
 
-function copyKey() {
+function copyKey(e) {
   navigator.clipboard.writeText(currentApiKey);
-  const btn = event.currentTarget;
+  const btn = e.currentTarget;
   btn.textContent = 'Copied!';
   setTimeout(() => btn.textContent = 'Copy key', 1500);
 }
@@ -952,10 +952,14 @@ async function handleCheckout(plan) {
     if (json.url) {
       window.location.href = json.url;
     } else {
-      alert(json.message || 'Could not start checkout. Try again.');
+      const msg = document.getElementById('signup-msg');
+      msg.textContent = json.message || 'Could not start checkout. Try again.';
+      msg.className = 'signup-msg error';
     }
   } catch (err) {
-    alert('Network error — is the API running? ' + err.message);
+    const msg = document.getElementById('signup-msg');
+    msg.textContent = 'Network error — is the API running? ' + err.message;
+    msg.className = 'signup-msg error';
   }
 }
 
@@ -1028,9 +1032,9 @@ function pgUpdateCode() {
   el.innerHTML = highlighted;
 }
 
-function pgCopyCode() {
+function pgCopyCode(e) {
   navigator.clipboard.writeText(pgGenerateCode());
-  const btn = event.currentTarget;
+  const btn = e.currentTarget;
   btn.textContent = 'Copied!';
   setTimeout(() => btn.textContent = 'Copy', 1500);
 }
@@ -1113,17 +1117,18 @@ async function pgRun() {
 }
 
 function renderPreviewResult(data, status, elapsed) {
+  const htmlFields = new Set();
   const fields = [
     ['title', data.title],
     ['description', data.description],
-    ['image', data.image ? `<a href="${escAttr(data.image)}" target="_blank">${escHtml(truncate(data.image, 60))}</a><br><img src="${escAttr(data.image)}" alt="OG image" loading="lazy" style="max-height:120px">` : null],
-    ['favicon', data.favicon ? `<img src="${escAttr(data.favicon)}" alt="favicon" style="width:24px;height:24px;vertical-align:middle"> <a href="${escAttr(data.favicon)}" target="_blank">${escHtml(truncate(data.favicon, 50))}</a>` : null],
+    ['image', data.image ? (htmlFields.add('image'), `<a href="${escAttr(data.image)}" target="_blank">${escHtml(truncate(data.image, 60))}</a><br><img src="${escAttr(data.image)}" alt="OG image" loading="lazy" style="max-height:120px">`) : null],
+    ['favicon', data.favicon ? (htmlFields.add('favicon'), `<img src="${escAttr(data.favicon)}" alt="favicon" style="width:24px;height:24px;vertical-align:middle"> <a href="${escAttr(data.favicon)}" target="_blank">${escHtml(truncate(data.favicon, 50))}</a>`) : null],
     ['siteName', data.siteName],
     ['type', data.type],
     ['language', data.language],
     ['author', data.author],
-    ['themeColor', data.themeColor ? `<span style="display:inline-block;width:14px;height:14px;border-radius:3px;background:${escAttr(data.themeColor)};vertical-align:middle;margin-right:6px"></span>${escHtml(data.themeColor)}` : null],
-    ['canonical', data.canonical ? `<a href="${escAttr(data.canonical)}" target="_blank">${escHtml(truncate(data.canonical, 60))}</a>` : null],
+    ['themeColor', data.themeColor ? (htmlFields.add('themeColor'), `<span style="display:inline-block;width:14px;height:14px;border-radius:3px;background:${escAttr(data.themeColor)};vertical-align:middle;margin-right:6px"></span>${escHtml(data.themeColor)}`) : null],
+    ['canonical', data.canonical ? (htmlFields.add('canonical'), `<a href="${escAttr(data.canonical)}" target="_blank">${escHtml(truncate(data.canonical, 60))}</a>`) : null],
     ['twitter.card', data.twitter?.card],
     ['twitter.site', data.twitter?.site],
     ['published', data.published],
@@ -1135,7 +1140,7 @@ function renderPreviewResult(data, status, elapsed) {
     .map(([k, v]) => `
       <div class="pg-meta-item">
         <div class="pg-meta-key">${escHtml(k)}</div>
-        <div class="pg-meta-val">${typeof v === 'string' && v.startsWith('<') ? v : escHtml(String(v))}</div>
+        <div class="pg-meta-val">${htmlFields.has(k) ? v : escHtml(String(v))}</div>
       </div>
     `).join('');
 
@@ -1163,7 +1168,7 @@ function renderScreenshotResult(data, status, elapsed) {
 
 // Helpers
 function escHtml(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
-function escAttr(s) { return s.replace(/"/g, '&quot;').replace(/'/g, '&#39;'); }
+function escAttr(s) { return s.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/'/g,'&#39;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 function truncate(s, n) { return s.length > n ? s.slice(0, n) + '...' : s; }
 </script>
 </body>
