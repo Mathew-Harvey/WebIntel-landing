@@ -5,9 +5,82 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>WebIntel API — Link Preview & Screenshot API for Developers and LLMs</title>
 <meta name="description" content="Extract Open Graph metadata and capture screenshots from any URL. REST API + MCP server for Claude and AI agents. Free tier available.">
+<link rel="canonical" href="https://webintel.dev/">
+<link rel="alternate" type="text/markdown" href="/index.md" title="WebIntel (Markdown for Agents)">
+<link rel="api-catalog" href="/.well-known/api-catalog" type="application/linkset+json">
+<link rel="service-desc" href="/openapi.yaml" type="application/vnd.oai.openapi">
+<link rel="service-doc" href="/#docs" type="text/html">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='6' fill='%230a0a0f'/><text x='4' y='23' font-family='monospace' font-size='18' font-weight='bold' fill='%2322d3ee'>wi</text></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=DM+Sans:ital,wght@0,400;0,500;0,700;1,400&display=swap" rel="stylesheet">
+<script>
+// =============================================================
+// WebMCP — expose WebIntel tools to AI agents via the browser.
+// Spec: https://webmachinelearning.github.io/webmcp/
+// =============================================================
+(function registerWebMCPTools() {
+  if (typeof navigator === 'undefined' || !navigator.modelContext || typeof navigator.modelContext.provideContext !== 'function') return;
+
+  var API_BASE = (location.hostname === 'localhost' || location.hostname === '127.0.0.1')
+    ? 'http://localhost:3000'
+    : 'https://api.webintel.dev';
+
+  function getKey() {
+    try { return localStorage.getItem('wi_api_key') || ''; } catch (e) { return ''; }
+  }
+
+  async function callApi(path, params) {
+    var qs = new URLSearchParams();
+    Object.keys(params || {}).forEach(function (k) {
+      if (params[k] !== undefined && params[k] !== null && params[k] !== '') qs.set(k, String(params[k]));
+    });
+    var headers = { 'accept': 'application/json' };
+    var key = getKey();
+    if (key) headers['x-api-key'] = key;
+    var res = await fetch(API_BASE + path + '?' + qs.toString(), { headers: headers });
+    var body = await res.json().catch(function () { return { error: 'invalid_json' }; });
+    if (!res.ok) throw new Error((body && body.message) || ('HTTP ' + res.status));
+    return body;
+  }
+
+  try {
+    navigator.modelContext.provideContext({
+      tools: [
+        {
+          name: 'link_preview',
+          description: 'Extract Open Graph, Twitter Card, and meta tag data from any public URL. Returns title, description, image, favicon, siteName, canonical, author, themeColor and published timestamp.',
+          inputSchema: {
+            type: 'object',
+            required: ['url'],
+            properties: {
+              url: { type: 'string', format: 'uri', description: 'Public URL to extract metadata from' }
+            }
+          },
+          execute: function (input) { return callApi('/v1/preview', { url: input.url }); }
+        },
+        {
+          name: 'take_screenshot',
+          description: 'Capture a screenshot of any public web page. Configurable viewport, format (png/jpeg/webp), full-page, dark-mode, and render delay.',
+          inputSchema: {
+            type: 'object',
+            required: ['url'],
+            properties: {
+              url:      { type: 'string', format: 'uri' },
+              width:    { type: 'integer', minimum: 320, maximum: 3840, default: 1280 },
+              height:   { type: 'integer', minimum: 240, maximum: 2160, default: 800 },
+              format:   { type: 'string', enum: ['png', 'jpeg', 'webp'], default: 'png' },
+              fullPage: { type: 'boolean', default: false },
+              darkMode: { type: 'boolean', default: false },
+              delay:    { type: 'integer', minimum: 0, maximum: 10000, description: 'Post-load render delay in ms' }
+            }
+          },
+          execute: function (input) { return callApi('/v1/screenshot', input); }
+        }
+      ]
+    });
+  } catch (e) { /* WebMCP not supported in this browser */ }
+})();
+</script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{

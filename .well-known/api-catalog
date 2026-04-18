@@ -1,0 +1,44 @@
+{
+  "linkset": [
+    {
+      "anchor": "https://api.webintel.dev/v1",
+      "service-desc": [
+        {
+          "href": "https://webintel.dev/openapi.yaml",
+          "type": "application/vnd.oai.openapi"
+        }
+      ],
+      "service-doc": [
+        {
+          "href": "https://webintel.dev/#docs",
+          "type": "text/html",
+          "title": "WebIntel API documentation"
+        },
+        {
+          "href": "https://github.com/Mathew-Harvey/webintel-api",
+          "type": "text/html",
+          "title": "WebIntel API source and guides"
+        }
+      ],
+      "status": [
+        {
+          "href": "https://api.webintel.dev/health",
+          "type": "application/json"
+        }
+      ],
+      "terms-of-service": [
+        {
+          "href": "https://webintel.dev/#",
+          "type": "text/html"
+        }
+      ],
+      "describedby": [
+        {
+          "href": "https://webintel.dev/.well-known/mcp/server-card.json",
+          "type": "application/json",
+          "title": "WebIntel MCP Server Card"
+        }
+      ]
+    }
+  ]
+}

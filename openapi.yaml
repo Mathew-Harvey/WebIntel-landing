@@ -1,0 +1,177 @@
+openapi: 3.1.0
+info:
+  title: WebIntel API
+  version: 1.0.0
+  summary: Link preview (Open Graph metadata) and screenshot capture as a REST API.
+  description: |
+    The WebIntel API exposes two endpoints:
+
+    - `GET /v1/preview` — extract Open Graph, Twitter Card, and meta tag data from any public URL.
+    - `GET /v1/screenshot` — capture a screenshot of any public web page (PNG / JPEG / WebP, full-page, dark-mode, render delay).
+
+    An MCP server exposes the same capabilities as native tools — see
+    <https://webintel.dev/.well-known/mcp/server-card.json>.
+  contact:
+    name: WebIntel
+    email: hello@webintel.dev
+    url: https://webintel.dev/
+  license:
+    name: Proprietary
+    url: https://webintel.dev/
+servers:
+  - url: https://api.webintel.dev
+    description: Production
+security:
+  - ApiKeyHeader: []
+  - ApiKeyQuery: []
+tags:
+  - name: preview
+    description: Link / Open Graph metadata extraction.
+  - name: screenshot
+    description: Headless-browser page capture.
+  - name: meta
+    description: Service metadata.
+paths:
+  /v1/preview:
+    get:
+      tags: [preview]
+      summary: Extract Open Graph / meta data from a URL
+      operationId: getPreview
+      parameters:
+        - in: query
+          name: url
+          required: true
+          schema: { type: string, format: uri }
+          description: Public URL to extract metadata from.
+      responses:
+        '200':
+          description: Extracted metadata
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Preview' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '429': { $ref: '#/components/responses/RateLimited' }
+  /v1/screenshot:
+    get:
+      tags: [screenshot]
+      summary: Capture a screenshot of a web page
+      operationId: getScreenshot
+      parameters:
+        - in: query
+          name: url
+          required: true
+          schema: { type: string, format: uri }
+        - in: query
+          name: width
+          schema: { type: integer, minimum: 320, maximum: 3840, default: 1280 }
+        - in: query
+          name: height
+          schema: { type: integer, minimum: 240, maximum: 2160, default: 800 }
+        - in: query
+          name: format
+          schema: { type: string, enum: [png, jpeg, webp], default: png }
+        - in: query
+          name: fullPage
+          schema: { type: boolean, default: false }
+        - in: query
+          name: darkMode
+          schema: { type: boolean, default: false }
+        - in: query
+          name: delay
+          schema: { type: integer, minimum: 0, maximum: 10000 }
+          description: Post-load render delay in milliseconds.
+      responses:
+        '200':
+          description: Screenshot
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Screenshot' }
+            image/png: { schema: { type: string, format: binary } }
+            image/jpeg: { schema: { type: string, format: binary } }
+            image/webp: { schema: { type: string, format: binary } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '429': { $ref: '#/components/responses/RateLimited' }
+  /health:
+    get:
+      tags: [meta]
+      summary: Service health check
+      operationId: getHealth
+      security: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status: { type: string, example: ok }
+                  version: { type: string }
+components:
+  securitySchemes:
+    ApiKeyHeader:
+      type: apiKey
+      in: header
+      name: x-api-key
+    ApiKeyQuery:
+      type: apiKey
+      in: query
+      name: api_key
+  responses:
+    BadRequest:
+      description: Invalid request
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    Unauthorized:
+      description: Missing or invalid API key
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    RateLimited:
+      description: Rate limit exceeded
+      headers:
+        X-RateLimit-Limit: { schema: { type: integer } }
+        X-RateLimit-Remaining: { schema: { type: integer } }
+        X-RateLimit-Reset: { schema: { type: integer } }
+        Retry-After: { schema: { type: integer } }
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+  schemas:
+    Preview:
+      type: object
+      properties:
+        title: { type: string }
+        description: { type: string }
+        image: { type: string, format: uri }
+        favicon: { type: string, format: uri }
+        siteName: { type: string }
+        type: { type: string }
+        language: { type: string }
+        themeColor: { type: string }
+        canonical: { type: string, format: uri }
+        author: { type: string }
+        published: { type: string, format: date-time }
+        twitter:
+          type: object
+          properties:
+            card: { type: string }
+            site: { type: string }
+            creator: { type: string }
+    Screenshot:
+      type: object
+      properties:
+        image: { type: string, description: 'data:image/...;base64 URI' }
+        width: { type: integer }
+        height: { type: integer }
+        format: { type: string, enum: [png, jpeg, webp] }
+        fullPage: { type: boolean }
+    Error:
+      type: object
+      properties:
+        error: { type: string }
+        code: { type: string }
+        message: { type: string }
