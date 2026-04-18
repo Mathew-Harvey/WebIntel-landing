@@ -1,0 +1,17 @@
+name = "webintel-agent-discovery"
+main = "worker.js"
+compatibility_date = "2026-04-01"
+
+# Bind the Worker to the webintel.dev zone so it wraps every response
+# served from the Render origin. Replace `zone_name` with your actual
+# Cloudflare zone if different.
+[[routes]]
+pattern = "webintel.dev/*"
+zone_name = "webintel.dev"
+
+[[routes]]
+pattern = "www.webintel.dev/*"
+zone_name = "webintel.dev"
+
+[observability]
+enabled = true
