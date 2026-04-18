@@ -1,0 +1,31 @@
+{
+  "$schema": "https://agentskills.io/schema/v0.2.0/index.json",
+  "version": "0.2.0",
+  "publisher": {
+    "name": "WebIntel",
+    "url": "https://webintel.dev/",
+    "contact": "mailto:hello@webintel.dev"
+  },
+  "skills": [
+    {
+      "name": "link-preview",
+      "type": "skill",
+      "description": "Extract Open Graph, Twitter Card, and meta tag data from any public URL via the WebIntel REST API.",
+      "url": "https://webintel.dev/.well-known/agent-skills/link-preview/SKILL.md",
+      "sha256": "81123ff12f001a1fda0849cdf61f8b659b2c69033876ef4c4c9478353249d4e3",
+      "tags": ["web", "metadata", "open-graph", "unfurl"],
+      "version": "1.0.0",
+      "license": "MIT"
+    },
+    {
+      "name": "take-screenshot",
+      "type": "skill",
+      "description": "Capture a screenshot of any public web page using the WebIntel REST API. Supports PNG/JPEG/WebP, full-page, dark-mode, and render delays.",
+      "url": "https://webintel.dev/.well-known/agent-skills/take-screenshot/SKILL.md",
+      "sha256": "ebd466bf17cf8b9e1270ee5d57fa86f02824712e0f76aac83d2dc9f0ac2d0e09",
+      "tags": ["web", "screenshot", "browser", "visual"],
+      "version": "1.0.0",
+      "license": "MIT"
+    }
+  ]
+}

@@ -1,0 +1,70 @@
+{
+  "$schema": "https://modelcontextprotocol.io/schema/server-card.json",
+  "serverInfo": {
+    "name": "webintel",
+    "title": "WebIntel",
+    "version": "1.0.0",
+    "description": "Link preview (Open Graph metadata) and screenshot capture as MCP tools. Backed by the WebIntel REST API.",
+    "vendor": {
+      "name": "WebIntel",
+      "url": "https://webintel.dev/"
+    },
+    "homepage": "https://webintel.dev/",
+    "documentation": "https://webintel.dev/#docs",
+    "contact": "mailto:hello@webintel.dev"
+  },
+  "transport": {
+    "type": "http",
+    "endpoint": "https://api.webintel.dev/mcp",
+    "protocolVersion": "2025-06-18"
+  },
+  "authentication": {
+    "type": "apiKey",
+    "in": "header",
+    "name": "x-api-key",
+    "obtainAt": "https://webintel.dev/#signup"
+  },
+  "capabilities": {
+    "tools": {
+      "listChanged": false
+    },
+    "resources": {
+      "listChanged": false
+    },
+    "prompts": {}
+  },
+  "tools": [
+    {
+      "name": "link_preview",
+      "description": "Extract Open Graph, Twitter Card, and meta tag data from any public URL. Returns title, description, image, favicon, site name, canonical URL, author, theme colour, and publication timestamp.",
+      "inputSchema": {
+        "type": "object",
+        "required": ["url"],
+        "properties": {
+          "url": {
+            "type": "string",
+            "format": "uri",
+            "description": "Public URL to extract metadata from"
+          }
+        }
+      }
+    },
+    {
+      "name": "take_screenshot",
+      "description": "Capture a screenshot of any public web page. Configure viewport, format (png/jpeg/webp), full-page capture, dark-mode emulation, and render delay.",
+      "inputSchema": {
+        "type": "object",
+        "required": ["url"],
+        "properties": {
+          "url": { "type": "string", "format": "uri" },
+          "width": { "type": "integer", "minimum": 320, "maximum": 3840, "default": 1280 },
+          "height": { "type": "integer", "minimum": 240, "maximum": 2160, "default": 800 },
+          "format": { "type": "string", "enum": ["png", "jpeg", "webp"], "default": "png" },
+          "fullPage": { "type": "boolean", "default": false },
+          "darkMode": { "type": "boolean", "default": false },
+          "delay": { "type": "integer", "minimum": 0, "maximum": 10000, "description": "Render delay in milliseconds" }
+        }
+      }
+    }
+  ]
+}

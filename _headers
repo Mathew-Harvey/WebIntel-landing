@@ -1,0 +1,47 @@
+# Cloudflare Pages / Netlify _headers
+# Adds Link response headers (RFC 8288) pointing agents to discovery resources.
+
+/*
+  Link: </.well-known/api-catalog>; rel="api-catalog"; type="application/linkset+json"
+  Link: </openapi.yaml>; rel="service-desc"; type="application/vnd.oai.openapi"
+  Link: </#docs>; rel="service-doc"; type="text/html"
+  Link: </.well-known/mcp/server-card.json>; rel="mcp-server-card"; type="application/json"
+  Link: </.well-known/agent-skills/index.json>; rel="agent-skills"; type="application/json"
+  Link: </sitemap.xml>; rel="sitemap"; type="application/xml"
+  X-Content-Type-Options: nosniff
+  Vary: Accept
+
+/.well-known/api-catalog
+  Content-Type: application/linkset+json; charset=utf-8
+  Cache-Control: public, max-age=3600
+
+/.well-known/oauth-protected-resource
+  Content-Type: application/json; charset=utf-8
+  Cache-Control: public, max-age=3600
+
+/.well-known/mcp/server-card.json
+  Content-Type: application/json; charset=utf-8
+  Cache-Control: public, max-age=3600
+
+/.well-known/agent-skills/index.json
+  Content-Type: application/json; charset=utf-8
+  Cache-Control: public, max-age=3600
+
+/.well-known/agent-skills/*
+  Cache-Control: public, max-age=3600
+
+/openapi.yaml
+  Content-Type: application/vnd.oai.openapi;charset=utf-8
+  Cache-Control: public, max-age=3600
+
+/index.md
+  Content-Type: text/markdown; charset=utf-8
+  Cache-Control: public, max-age=3600
+
+/robots.txt
+  Content-Type: text/plain; charset=utf-8
+  Cache-Control: public, max-age=3600
+
+/sitemap.xml
+  Content-Type: application/xml; charset=utf-8
+  Cache-Control: public, max-age=3600
